@@ -8,13 +8,71 @@ const UserSchema = new Schema({
   ip: String,
   userAgent: String,
   createdAt: { type: Date, default: Date.now() },
+  quotes: [{
+    NDA: { type: Boolean, default: false },
+    platforms: {
+      web: { type: Boolean, default: false },
+      android: { type: Boolean, default: false },
+      ios: { type: Boolean, default: false },
+      desktop: { type: Boolean, default: false },
+    },    
+    pages: { type: Number, default: 1 },
+    design: { type: Boolean, default: false },
+    authentication: {
+      email: { type: Boolean, default: false },
+      social: { type: Boolean, default: false },
+    },
+    data: {
+      database: { type: Boolean, default: false },
+      media: { type: Boolean, default: false },
+      datasource: { type: Boolean, default: false },
+    },
+    geolocation: {
+      simple: { type: Boolean, default: false },
+    },
+    communication: {
+      chat: { type: Boolean, default: false },
+      email: { type: Boolean, default: false },
+      push: { type: Boolean, default: false },
+      sms: { type: Boolean, default: false }
+    },
+    apis: { type: Number, default: 0 },
+    commerce: {
+      basicTransactions: { type: Boolean, default: false },
+      advancedTransactions: { type: Boolean, default: false },
+      basicSubscriptions: { type: Boolean, default: false },
+      advancedSubscriptions: { type: Boolean, default: false }
+    },
+    admin: {
+      admin: { type: Boolean, default: false },
+      dashboard: { type: Boolean, default: false },
+      reports: { type: Boolean, default: false }
+    },
+    product: {
+      prototype: { type: Boolean, default: false },
+      mvp: { type: Boolean, default: false },
+      polished: { type: Boolean, default: false }
+    },
+    time: {
+      normal: { type: Boolean, default: false },
+      asap: { type: Boolean, default: false },
+      now: { type: Boolean, default: false }
+    },
+    comments: String,
+    name: String,
+    email: String,
+    saved: { type: Boolean, default: false },
+    createdAt: {type: Date}
+    
+  }],
   log: [{
     actions: [{
       action: String,
       createdAt: { type: Date }  
     }],
     createdAt: { type: Date }
-  }]
+  }],
+  quotes: [ { type: Schema.Types.ObjectId, ref: 'quote' } ]
 });
 
 UserSchema.virtual('token').get(function () {

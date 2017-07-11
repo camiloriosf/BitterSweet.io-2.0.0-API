@@ -3,10 +3,12 @@ const {
   GraphQLObjectType
 } = graphql;
 const user = require('./user');
+const quote = require('./quote');
 
 const rootFields = Object.assign({},
   {
-    user
+    user,
+    quote
   }
 );
 
