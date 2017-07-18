@@ -10,8 +10,8 @@ const QuoteType = require('../types/quote_type');
 
 module.exports = {
   type: QuoteType,
-  args: { token: { type: new GraphQLNonNull(GraphQLString) } },
-  resolve(parentValue, {token}, req) {
-    return Quote.createQuote(token)
+  args: { id: { type: new GraphQLNonNull(GraphQLString) } },
+  resolve(parentValue, {id}, req) {
+    return Quote.findById(id);
   }
 };
