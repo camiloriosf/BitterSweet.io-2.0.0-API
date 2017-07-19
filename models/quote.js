@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const config = require('../config');
 
-const UserSchema = new Schema({
+const QuoteSchema = new Schema({
   NDA: { type: Boolean, default: false },
   platforms: {
     web: { type: Boolean, default: false },
@@ -73,33 +73,60 @@ const UserSchema = new Schema({
   createdAt: { type: Date }
 });
 
-UserSchema.statics.createQuote = function (token) {
+QuoteSchema.pre('save', function (next) {
+  const Quote = mongoose.model('quote');
+  Quote.findById(this.id)
+    .then(quote => {
+      if (quote) {
+        if (quote.geolocation.simple !== this.geolocation.simple) this.geolocation.advanced = false;
+        else if (quote.geolocation.advanced !== this.geolocation.advanced) this.geolocation.simple = false;
+        if (quote.commerce.basicTransactions !== this.commerce.basicTransactions) this.commerce.advancedTransactions = false;
+        else if (quote.commerce.advancedTransactions !== this.commerce.advancedTransactions) this.commerce.basicTransactions = false;
+        if (quote.commerce.basicSubscriptions !== this.commerce.basicSubscriptions) this.commerce.advancedSubscriptions = false;
+        else if (quote.commerce.advancedSubscriptions !== this.commerce.advancedSubscriptions) this.commerce.basicSubscriptions = false;
+        if (quote.product.prototype !== this.product.prototype) this.product.mvp = this.product.polished = false;
+        else if (quote.product.mvp !== this.product.mvp) this.product.prototype = this.product.polished = false;
+        else if (quote.product.polished !== this.product.polished) this.product.prototype = this.product.mvp = false;
+        if (quote.time.normal !== this.time.normal) this.time.asap = this.time.now = false;
+        else if (quote.time.asap !== this.time.asap) this.time.normal = this.time.now = false;
+        else if (quote.time.now !== this.time.now) this.time.normal = this.time.asap = false;
+        if (quote.plan.payg !== this.plan.payg) this.plan.installments = this.plan.fee = false;
+        else if (quote.plan.installments !== this.plan.installments) this.plan.payg = this.plan.fee = false;
+        else if (quote.plan.fee !== this.plan.fee) this.plan.payg = this.plan.installments = false;
+      }
+      next();
+    })
+});
+
+QuoteSchema.statics.createQuote = function (token) {
   const User = mongoose.model('user');
   const id = jwt.decode(token, config.secret).sub;
   return User.findById(id)
     .then(user => {
-      if(user){
+      if (user) {
         const Quote = mongoose.model('quote');
         const quote = new Quote({ user: id, createdAt: Date.now() });
         user.quotes.push(quote.id);
         return user.save()
-        .then(() => {return quote.save()})
+          .then(() => { return quote.save() })
       }
 
       return null;
     })
 }
 
-UserSchema.statics.updateQuote = function ({id, key1, key2, value}) {
+QuoteSchema.statics.updateQuote = function ({ id, fields }) {
   const Quote = mongoose.model('quote');
   return Quote.findById(id)
     .then(quote => {
-      if(quote){
-        if(key2 !== ''){
-          quote[key1][key2] = value;
-        }else{
-          quote[key1] = value;
-        }
+      if (quote) {
+        _.forEach(fields, (value, key) => {
+          if (value.sub !== undefined) {
+            quote[key][value.sub] = value.value
+          } else {
+            quote[key] = value.value
+          }
+        })
         return quote.save()
           .then(quote => quote)
       }
@@ -107,4 +134,4 @@ UserSchema.statics.updateQuote = function ({id, key1, key2, value}) {
     })
 }
 
-mongoose.model('quote', UserSchema);
+mongoose.model('quote', QuoteSchema);

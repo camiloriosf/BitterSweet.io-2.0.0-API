@@ -13,11 +13,10 @@ module.exports = {
     type: QuoteType,
     args: {
         id: { type: new GraphQLNonNull(GraphQLString) },
-        key1: { type: GraphQLString },
-        key2: { type: GraphQLString },
-        value: { type: GraphQLString }
+        key: { type: GraphQLJSON }
     },
-    resolve(parentValue, {id, key1, key2, value}, req) {
-        return Quote.updateQuote({id, key1, key2, value})
+    resolve(parentValue, {id, key}, req) {
+        const fields = JSON.parse(key);
+        return Quote.updateQuote({id, fields})
     }
 };
